@@ -10,6 +10,8 @@ public class SerializationFactory {
                 return new HessianSerialization();
             case JSON:
                 return new JsonSerialization();
+            case PROTOBUF:
+                return new ProtobufSerialization();
             default:
                 throw new IllegalArgumentException("serialization type is illegal, " + serializationType);
         }

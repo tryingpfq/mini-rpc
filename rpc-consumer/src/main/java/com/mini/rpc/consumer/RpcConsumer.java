@@ -1,5 +1,6 @@
 package com.mini.rpc.consumer;
 
+import com.google.common.hash.Hashing;
 import com.mini.rpc.codec.MiniRpcDecoder;
 import com.mini.rpc.codec.MiniRpcEncoder;
 import com.mini.rpc.common.MiniRpcRequest;
@@ -17,6 +18,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+
+import java.nio.charset.Charset;
 
 @Slf4j
 public class RpcConsumer {
@@ -43,7 +46,9 @@ public class RpcConsumer {
         Object[] params = request.getParams();
         String serviceKey = RpcServiceHelper.buildServiceKey(request.getClassName(), request.getServiceVersion());
 
-        int invokerHashCode = params.length > 0 ? params[0].hashCode() : serviceKey.hashCode();
+        int invokerHashCode = params.length > 0 ?
+                Hashing.murmur3_32().hashObject(params[0], null).asInt() :
+                Hashing.murmur3_32().hashString(serviceKey, Charset.defaultCharset()).asInt();
         ServiceMeta serviceMetadata = registryService.discovery(serviceKey, invokerHashCode);
 
         if (serviceMetadata != null) {

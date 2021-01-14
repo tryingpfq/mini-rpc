@@ -1,8 +1,10 @@
 package com.mini.rpc.provider.registry.loadbalancer;
 
+import com.google.common.hash.Hashing;
 import com.mini.rpc.common.ServiceMeta;
 import org.apache.curator.x.discovery.ServiceInstance;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,9 +37,10 @@ public class ZKConsistentHashLoadBalancer implements ServiceLoadBalancer<Service
         return ring;
     }
 
-    private String buildServiceInstanceKey(ServiceInstance<ServiceMeta> instance) {
+    private int buildServiceInstanceKey(ServiceInstance<ServiceMeta> instance) {
         ServiceMeta payload = instance.getPayload();
-        return String.join(":", payload.getServiceAddr(), String.valueOf(payload.getServicePort()));
+        String str = String.join(":", payload.getServiceAddr(), String.valueOf(payload.getServicePort()));
+        return Hashing.murmur3_32().hashString(str, Charset.defaultCharset()).asInt();
     }
 
 }
